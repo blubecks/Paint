@@ -44,7 +44,7 @@ public class PaintView extends View {
         int h = this.getHeight();
         Bitmap.Config conf = Bitmap.Config.ARGB_8888;
         Bitmap bmp = Bitmap.createBitmap(w, h, conf);
-        //canvas.drawBitmap(bmp,null,paint);
-        canvas.drawColor(0xff8080ff);
+        canvas.drawBitmap(bmp, w, h, null);
+        //canvas.drawColor(0xff8080ff);
     }
 }
