@@ -1,6 +1,8 @@
 package com.thesisloading.paint;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -10,10 +12,14 @@ import android.view.MotionEvent;
 
 public class MainActivity extends Activity {
 
+    private int w = 500;
+    private int h = 500;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
     }
 
 
