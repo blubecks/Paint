@@ -3,20 +3,25 @@ package com.thesisloading.paint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Path;
+import android.graphics.Point;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class PaintView extends View {
 
     private Paint paint;
     private Path path;
+    List<Point> points = new ArrayList<Point>();
 
     public PaintView(Context context) {
         this(context, null, 0);
@@ -31,7 +36,8 @@ public class PaintView extends View {
         super(context, attrs, defStyle);
         path = new Path();
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setStyle(Style.STROKE);
+        paint.setStyle(Style.FILL);
+        paint.setColor(Color.RED);
 
     }
 
@@ -48,6 +54,10 @@ public class PaintView extends View {
         Bitmap bmp = Bitmap.createBitmap(w, h, conf);
         canvas.drawBitmap(bmp, w, h, null);
         canvas.drawColor(0xff8080ff);
+
+        for (Point point:points){
+            canvas.drawCircle(point.x,point.y,5,paint);
+        }
     }
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -65,6 +75,8 @@ public class PaintView extends View {
             default:
                 action = "OTHER_ACTION";
         }
+
+
 //            Log.d("OnTouchEventX",event.getHistoricalX(i-1)+"");
 //            Log.d("OnTouchEventY",event.getHistoricalY(i-1)+"");
 
@@ -74,8 +86,16 @@ public class PaintView extends View {
             Log.d("OnTouchEventTouchMajor",event.getHistoricalTouchMajor(i-1)+"");
             Log.d("OnTouchEventTouchMinor",event.getHistoricalTouchMinor(i-1)+"");*/
         this.printSamples(event);
-
+        this.addPoints(event);
         return true;
+    }
+    private void addPoints(MotionEvent ev){
+        final int historySize = ev.getHistorySize();
+        for (int h = 0; h < historySize; h++) {
+            points.add(new Point((int) ev.getHistoricalX(h), (int) ev.getHistoricalY(h)));
+        }
+        points.add(new Point((int)ev.getX(),(int) ev.getY()));
+        invalidate();
     }
 
     private void printSamples(MotionEvent ev) {
