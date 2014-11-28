@@ -4,14 +4,19 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Path;
 import android.graphics.Point;
+import android.hardware.display.DisplayManager;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 
 import java.sql.Types;
 import java.util.ArrayList;
@@ -21,12 +26,12 @@ import java.util.List;
 public class PaintView extends View {
 
     private enum STATUS {START,LINE,STOP};
-
     private Paint paint;
     private Path path;
-    List<Point> points = new ArrayList<Point>();
-    Bitmap bmp;
+    private List<Point> points = new ArrayList<Point>();
+    private Bitmap bmp = null;
     private STATUS status;
+    private Matrix matrix;
 
 
     public PaintView(Context context) {
@@ -45,34 +50,32 @@ public class PaintView extends View {
         paint.setStyle(Style.STROKE);
         paint.setColor(Color.RED);
         paint.setStrokeWidth(10);
-
+        WindowManager manager= (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
+        Display display= manager.getDefaultDisplay();
+        Point p = new Point();
+        display.getSize(p);
+        matrix=new Matrix();
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        //Log.d("onMeasure","Width " + widthMeasureSpec + " Height " + heightMeasureSpec);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        Bitmap.Config conf = Bitmap.Config.ARGB_8888;
-        bmp = Bitmap.createBitmap(500, 500, conf);
+
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         int w = this.getWidth();
         int h = this.getHeight();
-        canvas.drawColor(0xff8080ff);
-        if(status == STATUS.STOP){
-            Canvas bitmapCanvas = new Canvas(bmp);
-            bitmapCanvas.drawPath(path,paint);
-            path.rewind();
-        }else{
-            canvas.drawPath(path,paint);
+        if (bmp == null) {
+            Bitmap.Config conf = Bitmap.Config.ARGB_8888;
+            bmp = Bitmap.createBitmap(w, h, conf);
         }
+        canvas.drawColor(Color.YELLOW);
+        canvas.drawBitmap(bmp, matrix, null);
+        canvas.drawPath(path,paint);
 
-        canvas.drawBitmap(bmp, w, h, null);
-
-//        for (Point point:points){
-//            canvas.drawCircle(point.x,point.y,5,paint);
-//        }
     }
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -92,6 +95,9 @@ public class PaintView extends View {
                 action = "ACTION_UP";
                 status = STATUS.STOP;
                 this.addPoints(event);
+                Canvas bitmapCanvas = new Canvas(bmp);
+                bitmapCanvas.drawPath(path, paint);
+                path.rewind();
                 break;
             default:
                 action = "OTHER_ACTION";
@@ -108,7 +114,7 @@ public class PaintView extends View {
             Log.d("OnTouchEventTouchMinor",event.getHistoricalTouchMinor(i-1)+"");*/
 
         invalidate();
-        this.printSamples(event);
+//        this.printSamples(event);
         return true;
     }
     private void addPoints(MotionEvent ev){
@@ -134,7 +140,6 @@ public class PaintView extends View {
         final int historySize = ev.getHistorySize();
         final int pointerCount = ev.getPointerCount();
         String debug;
-        Log.d("WOW un evento","ci sono "+ historySize + "belle cose");
         for (int h = 0; h < historySize; h++) {
             debug = String.format("Historical Touch at time %d:",ev.getHistoricalEventTime(h));
             for (int p = 0; p < pointerCount; p++) {
