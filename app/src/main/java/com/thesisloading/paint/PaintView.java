@@ -52,12 +52,25 @@ public class PaintView extends View {
         int h = this.getHeight();
         Bitmap.Config conf = Bitmap.Config.ARGB_8888;
         Bitmap bmp = Bitmap.createBitmap(w, h, conf);
-        canvas.drawBitmap(bmp, w, h, null);
         canvas.drawColor(0xff8080ff);
-
+        int i=1;
         for (Point point:points){
             canvas.drawCircle(point.x,point.y,5,paint);
+            /*if(i < points.size()) {
+                Point p = points.get(i);
+                double d = Math.sqrt((Math.pow((p.x - point.x), 2) + Math.pow((p.y - point.y), 2)));
+                path.moveTo(point.x, point.y);
+                float vx = ((p.x - point.x) - (p.y - point.y)) / (float) d;
+                for (float j = 0; j < Math.floor(d); j += 0.5) {
+                    path.lineTo((point.x + vx * j), (point.y + vx * j));
+                }
+                canvas.drawPath(path, paint);
+                i++;
+                Log.d("index",i+"");
+            }*/
         }
+        canvas.drawBitmap(bmp, w, h, null);
+        path.rewind();
     }
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -71,6 +84,7 @@ public class PaintView extends View {
                 break;
             case MotionEvent.ACTION_UP:
                 action = "ACTION_UP";
+                Log.d(action,action);
                 break;
             default:
                 action = "OTHER_ACTION";
@@ -85,7 +99,7 @@ public class PaintView extends View {
             Log.d("OnTouchEventToolMajor",event.getHistoricalToolMajor(i-1)+"");
             Log.d("OnTouchEventTouchMajor",event.getHistoricalTouchMajor(i-1)+"");
             Log.d("OnTouchEventTouchMinor",event.getHistoricalTouchMinor(i-1)+"");*/
-        this.printSamples(event);
+        //this.printSamples(event);
         this.addPoints(event);
         return true;
     }
