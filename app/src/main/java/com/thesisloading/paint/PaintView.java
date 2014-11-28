@@ -13,15 +13,21 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class PaintView extends View {
 
+    private enum STATUS {START,LINE,STOP};
+
     private Paint paint;
     private Path path;
     List<Point> points = new ArrayList<Point>();
+    Bitmap bmp;
+    private STATUS status;
+
 
     public PaintView(Context context) {
         this(context, null, 0);
@@ -36,28 +42,37 @@ public class PaintView extends View {
         super(context, attrs, defStyle);
         path = new Path();
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setStyle(Style.FILL);
+        paint.setStyle(Style.STROKE);
         paint.setColor(Color.RED);
+        paint.setStrokeWidth(10);
 
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        Bitmap.Config conf = Bitmap.Config.ARGB_8888;
+        bmp = Bitmap.createBitmap(500, 500, conf);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         int w = this.getWidth();
         int h = this.getHeight();
-        Bitmap.Config conf = Bitmap.Config.ARGB_8888;
-        Bitmap bmp = Bitmap.createBitmap(w, h, conf);
-        canvas.drawBitmap(bmp, w, h, null);
         canvas.drawColor(0xff8080ff);
-
-        for (Point point:points){
-            canvas.drawCircle(point.x,point.y,5,paint);
+        if(status == STATUS.STOP){
+            Canvas bitmapCanvas = new Canvas(bmp);
+            bitmapCanvas.drawPath(path,paint);
+            path.rewind();
+        }else{
+            canvas.drawPath(path,paint);
         }
+
+        canvas.drawBitmap(bmp, w, h, null);
+
+//        for (Point point:points){
+//            canvas.drawCircle(point.x,point.y,5,paint);
+//        }
     }
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -65,12 +80,18 @@ public class PaintView extends View {
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:
                 action = "ACTION_DOWN";
+                status =  STATUS.START;
+                this.addPoints(event);
                 break;
             case MotionEvent.ACTION_MOVE:
                 action = "ACTION_MOVE";
+                status = STATUS.LINE;
+                this.addPoints(event);
                 break;
             case MotionEvent.ACTION_UP:
                 action = "ACTION_UP";
+                status = STATUS.STOP;
+                this.addPoints(event);
                 break;
             default:
                 action = "OTHER_ACTION";
@@ -85,17 +106,28 @@ public class PaintView extends View {
             Log.d("OnTouchEventToolMajor",event.getHistoricalToolMajor(i-1)+"");
             Log.d("OnTouchEventTouchMajor",event.getHistoricalTouchMajor(i-1)+"");
             Log.d("OnTouchEventTouchMinor",event.getHistoricalTouchMinor(i-1)+"");*/
+
+        invalidate();
         this.printSamples(event);
-        this.addPoints(event);
         return true;
     }
     private void addPoints(MotionEvent ev){
         final int historySize = ev.getHistorySize();
+
         for (int h = 0; h < historySize; h++) {
-            points.add(new Point((int) ev.getHistoricalX(h), (int) ev.getHistoricalY(h)));
+            if(h==0 && status == STATUS.START) {
+                path.moveTo(ev.getHistoricalX(h), ev.getHistoricalY(h));
+                status = STATUS.LINE;
+            }else {
+                path.lineTo(ev.getHistoricalX(h), ev.getHistoricalY(h));
+            }
         }
-        points.add(new Point((int)ev.getX(),(int) ev.getY()));
-        invalidate();
+        if(status == STATUS.START) {
+            path.moveTo(ev.getX(), ev.getY());
+            status = STATUS.LINE;
+        }else{
+            path.lineTo(ev.getX(), ev.getY());
+        }
     }
 
     private void printSamples(MotionEvent ev) {
