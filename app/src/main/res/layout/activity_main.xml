@@ -7,7 +7,7 @@
 
     <com.thesisloading.paint.PaintView
         android:id="@+id/paint"
-        android:layout_width="500dp"
-        android:layout_height="400dp" />
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
 
 </RelativeLayout>
