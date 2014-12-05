@@ -2,14 +2,23 @@
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
+    android:id="@+id/main_view"
     android:orientation="vertical">
 
     <com.thesisloading.paint.PaintView
-        android:id="@+id/paint"
+        android:id="@+id/paint_mu"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="5"
         android:layout_gravity="top"
         />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        android:layout_height="0dp"
+        android:text="Save IT"
+        android:id="@+id/button_save" />
 
 
 </LinearLayout>
